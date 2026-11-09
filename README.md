@@ -1,5 +1,7 @@
 # dsh-time-router
 
+[![topic: dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-2ea44f?logo=github)](https://github.com/topics/dsh-plugin) [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4d6bfe)](https://github.com/topics/dsh-plugin)
+
 [中文](README.zh.md) · English
 
 `dsh-time-router` is a plugin (bundle) for DeepSeek Harness (dsh) 0.2.2-rc.1 that routes model calls by Beijing time: workdays `09:00–12:00` and `14:00–18:00` go to a **peak** route, every other time (including weekends and statutory holidays) goes to an **off-peak** route. It registers a virtual provider `time-router` (virtual models `auto-flash` / `auto-pro`), intercepts the Harness `llm/stream` waterfall for that provider, locks each turn to one real route and streams from it. It ships built-in China holiday data for 2025–2027 with optional online refresh, per-turn locking, circuit breakers with an explained fallback, a status/usage ring with a JSONL event log, a `/time-router` command, an HTTP status API, and a status chip in the composer dock.

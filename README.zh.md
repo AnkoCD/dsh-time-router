@@ -1,5 +1,7 @@
 # dsh-time-router
 
+[![topic: dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-2ea44f?logo=github)](https://github.com/topics/dsh-plugin) [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4d6bfe)](https://github.com/topics/dsh-plugin)
+
 中文 · [English](README.md)
 
 `dsh-time-router` 是 DeepSeek Harness（dsh）0.2.2-rc.1 的插件（bundle）：它按北京时间在两个模型路由之间切换——工作日 `09:00–12:00` 与 `14:00–18:00` 走 **peak** 路由，其余时间（含周末与法定节假日）走 **offPeak** 路由。插件注册一个虚拟 provider `time-router`（虚拟模型 `auto-flash` / `auto-pro`），在 Harness 的 `llm/stream` waterfall 上拦截发往该 provider 的请求，把本轮锁定到某条真实路由并流式转发；它内置 2025–2027 年中国节假日数据并支持在线刷新，提供按轮锁定、熔断与带说明的回退、状态与用量环、JSONL 事件日志、`/time-router` 命令、HTTP 状态 API，以及输入框停靠区里的状态 chip。
