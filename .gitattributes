@@ -1,0 +1,10 @@
+# Normalize text files to LF in the repository so Windows and POSIX checkouts
+# behave identically; the plugin code, YAML and Markdown are LF everywhere.
+* text=auto eol=lf
+
+# Binary assets must stay untouched.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.gif binary
