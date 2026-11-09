@@ -67,7 +67,7 @@ test('direct streaming maps reasoning, text, usage and finish', async (t) => {
   const client = directClient()
   const chunks = await collect(client.stream({
     provider: 'time-router',
-    model: 'auto-chat',
+    model: 'auto-flash',
     sessionId: 'session-1',
     messages: [{ role: 'user', content: [{ type: 'text', text: 'hi' }] }],
     maxTokens: 100,
@@ -101,7 +101,7 @@ test('tool-call deltas keep one block per tool index and finish as tool-calls', 
     { choices: [{ delta: {}, finish_reason: 'tool_calls' }] },
   ]))
   const client = directClient()
-  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-reasoner', messages: [{ role: 'user', content: [{ type: 'text', text: 'time?' }] }] }, 'reasoner'))
+  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-pro', messages: [{ role: 'user', content: [{ type: 'text', text: 'time?' }] }] }, 'reasoner'))
   const calls = chunks.filter((chunk) => chunk.type === 'tool-call-delta')
   assert.equal(calls.length, 3)
   assert.equal(calls[0].name, 'get_time')
@@ -114,7 +114,7 @@ test('tool-call deltas keep one block per tool index and finish as tool-calls', 
 test('HTTP 401 becomes an AUTH terminal chunk', async (t) => {
   withFetch(t, async () => new Response('bad key', { status: 401 }))
   const client = directClient()
-  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-chat', messages: [] }, 'chat'))
+  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-flash', messages: [] }, 'chat'))
   assert.equal(chunks.length, 1)
   assert.equal(chunks[0].reason.kind, 'error')
   assert.equal(chunks[0].reason.failure.code, 'AUTH')
@@ -127,7 +127,7 @@ test('a missing key fails with MISSING_CREDENTIAL before any network call', asyn
   })
   const client = directClient({ apiKey: null, apiKeyEnv: 'DSH_TIME_ROUTER_UNSET_KEY' })
   delete process.env.DSH_TIME_ROUTER_UNSET_KEY
-  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-chat', messages: [] }, 'chat'))
+  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-flash', messages: [] }, 'chat'))
   assert.equal(chunks[0].reason.failure.code, 'MISSING_CREDENTIAL')
   assert.equal(client.hasKey(), false)
 })
@@ -148,7 +148,7 @@ test('a key file under the plugin data directory is picked up', (t) => {
 test('SSE provider error events terminate the stream', async (t) => {
   withFetch(t, async () => streamResponse([{ error: { message: 'quota gone', type: 'insufficient_quota' } }]))
   const client = directClient()
-  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-chat', messages: [] }, 'chat'))
+  const chunks = await collect(client.stream({ provider: 'time-router', model: 'auto-flash', messages: [] }, 'chat'))
   assert.equal(chunks.at(-1).reason.kind, 'error')
   assert.equal(chunks.at(-1).reason.failure.code, 'PROVIDER_ERROR')
 })
@@ -159,7 +159,7 @@ test('toChatMessages folds system text and converts tools and tool results', () 
     messages: [
       { role: 'system', source: { kind: 'system-prompt' }, content: [{ type: 'text', text: 'later system' }] },
       { role: 'user', content: [{ type: 'text', text: 'look' }, { type: 'image', attachment: { attachmentId: 'img_1' } }, { type: 'file', attachment: { attachmentId: 'file_1', name: 'a.txt', bytes: 5 } }] },
-      { role: 'assistant', source: { kind: 'model', provider: 'time-router', model: 'auto-chat' }, content: [
+      { role: 'assistant', source: { kind: 'model', provider: 'time-router', model: 'auto-flash' }, content: [
         { type: 'reasoning', text: 'hidden' },
         { type: 'text', text: 'calling' },
         { type: 'tool-call', id: 'call_1', name: 'read', arguments: '{"path":"a"}' },

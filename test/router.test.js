@@ -74,25 +74,25 @@ test('mergeCapabilities takes the safe intersection and the reasoning union', ()
 
 test('plan locks a new turn, reuses it for continuations and auxiliary requests', () => {
   const { router } = makeRouter()
-  const first = router.plan({ provider: 'time-router', model: 'auto-chat', sessionId: 's1', messages: [userMessage('u1')] })
+  const first = router.plan({ provider: 'time-router', model: 'auto-flash', sessionId: 's1', messages: [userMessage('u1')] })
   assert.equal(first.kind, 'new-turn')
   assert.equal(first.routeKey, 'peak')
   assert.equal(first.crossedIntoPeak, false) // peak decision, not a DeepSeek turn crossing in
   assert.equal(router.locks.get('s1').userKey, 'u1')
 
-  const continuation = router.plan({ provider: 'time-router', model: 'auto-chat', sessionId: 's1', messages: [userMessage('u1'), { role: 'tool', toolCallId: 'c1', content: [{ type: 'text', text: 'result' }] }] })
+  const continuation = router.plan({ provider: 'time-router', model: 'auto-flash', sessionId: 's1', messages: [userMessage('u1'), { role: 'tool', toolCallId: 'c1', content: [{ type: 'text', text: 'result' }] }] })
   assert.equal(continuation.kind, 'continuation')
   assert.equal(continuation.routeKey, 'peak')
 
-  const auxiliary = router.plan({ provider: 'time-router', model: 'auto-chat', sessionId: 's1', messages: [userMessage('u1')], purpose: 'session-title' })
+  const auxiliary = router.plan({ provider: 'time-router', model: 'auto-flash', sessionId: 's1', messages: [userMessage('u1')], purpose: 'session-title' })
   assert.equal(auxiliary.kind, 'auxiliary')
   assert.equal(auxiliary.routeKey, 'peak')
 
-  const nextTurn = router.plan({ provider: 'time-router', model: 'auto-chat', sessionId: 's1', messages: [userMessage('u1'), userMessage('u2')] })
+  const nextTurn = router.plan({ provider: 'time-router', model: 'auto-flash', sessionId: 's1', messages: [userMessage('u1'), userMessage('u2')] })
   assert.equal(nextTurn.kind, 'new-turn')
   assert.equal(router.locks.get('s1').userKey, 'u2')
 
-  const oneOff = router.plan({ provider: 'time-router', model: 'auto-chat', messages: [userMessage('u9')] })
+  const oneOff = router.plan({ provider: 'time-router', model: 'auto-flash', messages: [userMessage('u9')] })
   assert.equal(oneOff.kind, 'one-off')
 })
 
@@ -101,7 +101,7 @@ test('an off-peak-locked DeepSeek turn crossing into the window is marked', () =
   // Lock the turn while inside the peak window but pinned off-peak by manual override is
   // not the interesting case; simulate the accepted case: a lock created off-peak.
   router.locks.set('s1', { userKey: 'u1', routeKey: 'offPeak', lockedAt: NOW, reason: 'outside-peak-window', crossedIntoPeak: false, fallback: false, fallbackReason: null })
-  const plan = router.plan({ provider: 'time-router', model: 'auto-chat', sessionId: 's1', messages: [userMessage('u1')] })
+  const plan = router.plan({ provider: 'time-router', model: 'auto-flash', sessionId: 's1', messages: [userMessage('u1')] })
   assert.equal(plan.kind, 'continuation')
   assert.equal(plan.routeKey, 'offPeak')
   assert.equal(plan.crossedIntoPeak, true)
@@ -110,7 +110,7 @@ test('an off-peak-locked DeepSeek turn crossing into the window is marked', () =
 test('an open circuit breaker switches the turn without a failed request', () => {
   const { router, config } = makeRouter()
   router.breakers.open('peak-route', 'p-chat', 'quota', { code: 'QUOTA' }, config.fallback)
-  const plan = router.plan({ provider: 'time-router', model: 'auto-chat', messages: [userMessage('u1')] })
+  const plan = router.plan({ provider: 'time-router', model: 'auto-flash', messages: [userMessage('u1')] })
   assert.equal(plan.routeKey, 'offPeak')
   assert.ok(plan.fallback !== null)
   assert.equal(plan.fallback.fromProvider, 'peak-route')
@@ -130,7 +130,7 @@ test('route retries once on the same provider, then falls back before any output
     return asyncIterableOf([{ type: 'finish', reason: { kind: 'error', failure: { message: 'boom', code: 'SERVER' } } }])
   })
   const chunks = []
-  for await (const chunk of router.route({ provider: 'time-router', model: 'auto-chat', messages: [userMessage('u1')] })) chunks.push(chunk)
+  for await (const chunk of router.route({ provider: 'time-router', model: 'auto-flash', messages: [userMessage('u1')] })) chunks.push(chunk)
   assert.equal(peakAttempts, 2) // original attempt + one same-provider retry
   assert.equal(chunks.filter((chunk) => chunk.type === 'text-delta').map((chunk) => chunk.text).join(''), 'from-off-peak')
   assert.equal(chunks.at(-1).reason.kind, 'stop')
@@ -153,7 +153,7 @@ test('after the first chunk the turn is committed and is never re-routed', async
     return asyncIterableOf([{ type: 'text-delta', index: 0, text: 'never' }, { type: 'finish', reason: { kind: 'stop' } }])
   })
   const chunks = []
-  for await (const chunk of router.route({ provider: 'time-router', model: 'auto-chat', messages: [userMessage('u1')] })) chunks.push(chunk)
+  for await (const chunk of router.route({ provider: 'time-router', model: 'auto-flash', messages: [userMessage('u1')] })) chunks.push(chunk)
   assert.deepEqual(calls, ['peak-route'])
   assert.equal(chunks.at(-1).reason.kind, 'error')
   assert.equal(events.at(-1).outcome, 'error')
@@ -167,10 +167,10 @@ test('delegated calls retarget assistant provenance so the target adapter can re
   })
   const history = [userMessage('u1'), {
     role: 'assistant',
-    source: { kind: 'model', provider: 'time-router', model: 'auto-chat', replayState: { response: 'signed' } },
+    source: { kind: 'model', provider: 'time-router', model: 'auto-flash', replayState: { response: 'signed' } },
     content: [{ type: 'text', text: 'previous answer' }],
   }]
-  for await (const _chunk of router.route({ provider: 'time-router', model: 'auto-chat', sessionId: 's1', messages: history })) { /* drain */ }
+  for await (const _chunk of router.route({ provider: 'time-router', model: 'auto-flash', sessionId: 's1', messages: history })) { /* drain */ }
   assert.equal(seen.provider, 'peak-route')
   assert.equal(seen.model, 'p-chat')
   assert.equal(seen.messages[1].source.provider, 'peak-route')

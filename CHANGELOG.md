@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Virtual model ids are `auto-flash` (chat tier) and `auto-pro` (reasoner tier),
+  replacing the earlier `auto-chat` / `auto-reasoner` ids. The model picker
+  labels are derived from the configured ids (`auto-flash` renders as
+  “Auto · flash”).
+
 ## [0.1.0] - 2026-11-09
 
 Initial release for DeepSeek Harness 0.2.2-rc.1.
@@ -15,8 +22,8 @@ Initial release for DeepSeek Harness 0.2.2-rc.1.
 - Time-of-day routing between a peak route and an off-peak route by Beijing time
   (`Asia/Shanghai`), with half-open peak windows `09:00–12:00` and `14:00–18:00`
   on workdays and a pure, instant-based decision function.
-- The virtual provider `time-router` with virtual models `auto-chat` and
-  `auto-reasoner` (configurable), registered through the Harness `llm` service.
+- The virtual provider `time-router` with virtual models `auto-flash` and
+  `auto-pro` (configurable), registered through the Harness `llm` service.
 - `llm/stream` interception before adapter projection, so exactly one provider
   adapter sees each request and no capability projection is applied twice.
 - Direct routes (an OpenAI-compatible Chat Completions endpoint owned by the

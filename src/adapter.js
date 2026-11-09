@@ -3,8 +3,8 @@
  *
  * Registering an adapter is what makes the route real to the Harness: the
  * model picker, `prepareCall()` capability checks and session attribution all
- * see one stable provider/model pair (`time-router` / `auto-chat`|
- * `auto-reasoner`). Actual dispatch is short-circuited in the `llm/stream`
+ * see one stable provider/model pair (`time-router` / `auto-flash`|
+ * `auto-pro`). Actual dispatch is short-circuited in the `llm/stream`
  * waterfall by the router, so this adapter's `stream()` is only a defensive
  * fallback for the case where interception was not installed.
  *
@@ -25,10 +25,19 @@
 export function createVirtualAdapter({ router, provider, models, warn }) {
   const modelIds = new Set([models.chat, models.reasoner])
 
+  /**
+   * Picker label derived from the configured model id: `auto-flash` renders as
+   * "Auto · flash", so renaming the id also renames the picker entry.
+   */
+  function displayName(model) {
+    const label = model.startsWith('auto-') ? model.slice('auto-'.length) : model
+    return `Auto · ${label} (time-routed)`
+  }
+
   function describe(model) {
     return model === models.reasoner
-      ? 'Time-routed reasoning model: peak hours use your peak route, off-peak your off-peak route.'
-      : 'Time-routed chat model: peak hours use your peak route, off-peak your off-peak route.'
+      ? 'Time-routed reasoning tier: peak hours use your peak route, off-peak your off-peak route.'
+      : 'Time-routed chat tier: peak hours use your peak route, off-peak your off-peak route.'
   }
 
   return {
@@ -54,14 +63,14 @@ export function createVirtualAdapter({ router, provider, models, warn }) {
         {
           provider,
           id: models.chat,
-          name: 'Auto · chat (time-routed)',
+          name: displayName(models.chat),
           description: describe(models.chat),
           badge: { text: 'time-routed', tone: 'info' },
         },
         {
           provider,
           id: models.reasoner,
-          name: 'Auto · reasoner (time-routed)',
+          name: displayName(models.reasoner),
           description: describe(models.reasoner),
           badge: { text: 'time-routed', tone: 'info' },
         },
@@ -78,7 +87,7 @@ export function createVirtualAdapter({ router, provider, models, warn }) {
       return {
         provider: id,
         id: model,
-        name: model === models.reasoner ? 'Auto · reasoner (time-routed)' : 'Auto · chat (time-routed)',
+        name: displayName(model),
         description: describe(model),
         ...capabilities,
       }

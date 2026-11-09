@@ -2,7 +2,7 @@
 
 中文 · [English](README.md)
 
-`dsh-time-router` 是 DeepSeek Harness（dsh）0.2.2-rc.1 的插件（bundle）：它按北京时间在两个模型路由之间切换——工作日 `09:00–12:00` 与 `14:00–18:00` 走 **peak** 路由，其余时间（含周末与法定节假日）走 **offPeak** 路由。插件注册一个虚拟 provider `time-router`（虚拟模型 `auto-chat` / `auto-reasoner`），在 Harness 的 `llm/stream` waterfall 上拦截发往该 provider 的请求，把本轮锁定到某条真实路由并流式转发；它内置 2025–2027 年中国节假日数据并支持在线刷新，提供按轮锁定、熔断与带说明的回退、状态与用量环、JSONL 事件日志、`/time-router` 命令、HTTP 状态 API，以及输入框停靠区里的状态 chip。
+`dsh-time-router` 是 DeepSeek Harness（dsh）0.2.2-rc.1 的插件（bundle）：它按北京时间在两个模型路由之间切换——工作日 `09:00–12:00` 与 `14:00–18:00` 走 **peak** 路由，其余时间（含周末与法定节假日）走 **offPeak** 路由。插件注册一个虚拟 provider `time-router`（虚拟模型 `auto-flash` / `auto-pro`），在 Harness 的 `llm/stream` waterfall 上拦截发往该 provider 的请求，把本轮锁定到某条真实路由并流式转发；它内置 2025–2027 年中国节假日数据并支持在线刷新，提供按轮锁定、熔断与带说明的回退、状态与用量环、JSONL 事件日志、`/time-router` 命令、HTTP 状态 API，以及输入框停靠区里的状态 chip。
 
 ## 目录
 
@@ -22,7 +22,7 @@
 
 - **按北京时间峰谷路由**：默认 peak 窗口为工作日 `09:00–12:00`、`14:00–18:00`（`Asia/Shanghai`），区间为半开 `[start, end)`；窗口之外的请求走 offPeak。
 - **节假日感知**：周六、周日与法定节假日全天走 offPeak；国务院通知里的调休补班日按工作日处理，照常按窗口判定。
-- **虚拟 provider + 虚拟模型**：`time-router` / `auto-chat`、`auto-reasoner`（均可改名）。Harness 的模型选择器、能力校验与会话归属看到的都是一个稳定的 provider/model 对。
+- **虚拟 provider + 虚拟模型**：`time-router` / `auto-flash`、`auto-pro`（均可改名）。Harness 的模型选择器、能力校验与会话归属看到的都是一个稳定的 provider/model 对。
 - **每条路由可选直连或委托**：带 `baseURL` 的路由是 *direct*（插件自己说 OpenAI Chat Completions 协议）；只写 `provider:` 的路由是 *delegated*（复用已注册的 Harness 路由）。两条路由独立选择。
 - **按轮锁定，绝不中途换路**：同一轮（以该轮最后一条持久的用户消息 id 标识）内路由不变；工具循环续写、会话标题/压缩等辅助请求继承本轮的锁。
 - **首 token 提交语义**：第一个 chunk 之前最多同路由重试一次（可配），然后可切到另一条路由；第一个 chunk 之后本轮提交，不再回退。
@@ -165,9 +165,9 @@ dsh plugin --profile desktop add C:\path\to\dsh-time-router
 
 **3. 把 Harness 默认模型指向虚拟路由**
 
-只有把默认模型设成 `time-router` / `auto-chat`（推理任务可用 `auto-reasoner`），流量才会经过路由器；否则插件处于空闲状态。两种方式等价：
+只有把默认模型设成 `time-router` / `auto-flash`（推理任务可用 `auto-pro`），流量才会经过路由器；否则插件处于空闲状态。两种方式等价：
 
-- **Settings → Models** 里选择 provider `time-router`、模型 `auto-chat`。
+- **Settings → Models** 里选择 provider `time-router`、模型 `auto-flash`。
 - 在 profile patch 里覆盖默认模型行：
 
 ```yaml
@@ -175,7 +175,7 @@ dsh plugin --profile desktop add C:\path\to\dsh-time-router
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
     provider: time-router
-    model: auto-chat
+    model: auto-flash
     reasoningEffort: high
 ```
 
@@ -194,7 +194,7 @@ dsh plugin --profile desktop add C:\path\to\dsh-time-router
 | `peakWindows` | `[['09:00','12:00'], ['14:00','18:00']]` | 半开区间；不允许跨午夜、起止相同；重叠会告警 |
 | `peak` | 直连 OpenCode Go | 有 `baseURL` 即 direct；否则须有 `provider:` |
 | `offPeak` | 委托 `deepseek-official` | 同上 |
-| `virtual` | `time-router` / `auto-chat` + `auto-reasoner` | 虚拟 provider 与模型 id |
+| `virtual` | `time-router` / `auto-flash` + `auto-pro` | 虚拟 provider 与模型 id |
 | `manual` | `{ mode: auto, until: null }` | `auto` / `peak` / `offPeak`，可带 ISO 过期时间 |
 | `fallback` | `{ enabled: true, sameProviderRetry: 1, quotaCooldownMinutes: 30, authCooldownMinutes: 0 }` | 重试与熔断冷却 |
 | `holidays` | `{ online: true, refreshDays: 7, sources, overrides: {} }` | 在线刷新与手工覆盖（`YYYY-MM-DD → holiday\|workday`） |
@@ -316,7 +316,7 @@ this turn is billed at peak pricing; OpenCode Go cools down until 2026-11-09T04:
 | 看到 `↩ fallback` / 回退通知 | 通知里写明原因与计价后果；状态 API 的 `notices`、`events` 与事件日志可查完整记录 |
 | 时间判定与预期不符 | 确认 `timezone`、`peakWindows` 半开区间、`manual` 覆盖、`debug.fakeNow`；面板显示的是 Asia/Shanghai 时间 |
 | 节假日数据过期/缺失 | `/time-router sync`；检查 `%DSH_HOME%/plugins/time-router/holidays.cache.json` 的 `fetchedAt` 与面板告警 |
-| 模型选择器里找不到 `auto-chat` | 插件行是否启用、虚拟 provider 是否注册成功；见日志中 `time-router: virtual provider ... ready` |
+| 模型选择器里找不到 `auto-flash` | 插件行是否启用、虚拟 provider 是否注册成功；见日志中 `time-router: virtual provider ... ready` |
 | 面板请求 401 | 面板走 Harness 的 `connection` 校验；从 Harness 页面内打开，不要直接访问 API URL |
 | 需要看日志 | Harness 日志（provider 启动/同步/回退告警）；`%DSH_HOME%/plugins/time-router/events.jsonl`（路由事件）；`holidays.cache.json`（节假日缓存） |
 
@@ -360,8 +360,8 @@ node --test test/*.test.js
 **验证状态**（2026-11-09，`Asia/Shanghai`）：
 
 - 43 个单元测试全部通过（`node test/<file>.test.js` 逐文件执行）。
-- 插件已以 `link:` 方式安装进 Desktop profile，bundle 列表与 `id: time-router` 的行处于启用状态，`agent-default-model` 指向 `time-router` / `auto-chat`。
-- **端到端路由实测通过**：默认模型指向 `time-router` / `auto-chat` 的新会话依次走通三条路径——非高峰委托 `deepseek-official`（`deepseek-flash`）、强制高峰直连 OpenCode Go（`deepseek-v4.1-flash`，含 reasoning token 用量）、以及移除密钥后的认证回退（`MISSING_CREDENTIAL` → 本轮自动切到 `deepseek-official` 并记录回退通知）。每次真实请求都写入 `%DSH_HOME%/plugins/time-router/events.jsonl`，会话日志里的 `request/header` 记录的是虚拟路由 `time-router` / `auto-chat`。
+- 插件已以 `link:` 方式安装进 Desktop profile，bundle 列表与 `id: time-router` 的行处于启用状态，`agent-default-model` 指向 `time-router` / `auto-flash`。
+- **端到端路由实测通过**：默认模型指向 `time-router` / `auto-flash` 的新会话依次走通三条路径——非高峰委托 `deepseek-official`（`deepseek-flash`）、强制高峰直连 OpenCode Go（`deepseek-v4.1-flash`，含 reasoning token 用量）、以及移除密钥后的认证回退（`MISSING_CREDENTIAL` → 本轮自动切到 `deepseek-official` 并记录回退通知）。每次真实请求都写入 `%DSH_HOME%/plugins/time-router/events.jsonl`，会话日志里的 `request/header` 记录的是虚拟路由 `time-router` / `auto-flash`。
 - 节假日在线同步已实际跑通：`%DSH_HOME%/plugins/time-router/holidays.cache.json` 中记录了 2026 与 2027 的抓取结果。
 - HTTP 状态接口已注册到运行中的 Harness：从浏览器会话以外直接请求 `GET /api/time-router/status` 会得到 401，即 Harness 的 `connection` 校验生效。
 - 浏览器内 chip/面板的视觉效果未做自动化验证，请以 Harness 页面实际渲染为准。

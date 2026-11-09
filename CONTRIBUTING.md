@@ -25,7 +25,7 @@ node --test test/
 
 当前基线是 **43 个测试全部通过**。CI（`.github/workflows/ci.yml`）在 Node 22 上做两件事：对每个 `test/*.test.js` 逐个执行，以及对每个 JS 文件执行 `node --check`。
 
-本地加载插件（可选）：把仓库目录以 `link:` 方式装进某个 profile，再把默认模型指向 `time-router` / `auto-chat`，即可在 Harness 里手测：
+本地加载插件（可选）：把仓库目录以 `link:` 方式装进某个 profile，再把默认模型指向 `time-router` / `auto-flash`，即可在 Harness 里手测：
 
 ```bash
 dsh plugin --profile <profile> add C:\path\to\dsh-time-router

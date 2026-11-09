@@ -55,7 +55,7 @@ export const CONFIG_DEFAULTS = Object.freeze({
   }),
   virtual: Object.freeze({
     provider: 'time-router',
-    models: Object.freeze({ chat: 'auto-chat', reasoner: 'auto-reasoner' }),
+    models: Object.freeze({ chat: 'auto-flash', reasoner: 'auto-pro' }),
   }),
   manual: Object.freeze({ mode: 'auto', until: null }),
   fallback: Object.freeze({

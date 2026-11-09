@@ -56,7 +56,7 @@
 | `peakWindows` | `[string, string][]` | `[['09:00','12:00'], ['14:00','18:00']]` | 高峰窗口，24 小时制 `HH:MM`，半开区间 `[start, end)`；必须非空；不允许起止相同或跨午夜（跨午夜请拆成两个窗口）；按开始时间排序，重叠会告警（按并集处理）。 |
 | `peak` | object | 直连 OpenCode Go | 高峰路由，见[路由字段](#路由字段peak--offpeak)。 |
 | `offPeak` | object | 委托 `deepseek-official` | 非高峰路由，同上。 |
-| `virtual` | object | `time-router` / `auto-chat`+`auto-reasoner` | 虚拟 provider 与虚拟模型，见 [virtual](#virtual)。 |
+| `virtual` | object | `time-router` / `auto-flash`+`auto-pro` | 虚拟 provider 与虚拟模型，见 [virtual](#virtual)。 |
 | `manual` | object | `{ mode: auto, until: null }` | 手动覆盖，见 [manual](#manual)。 |
 | `fallback` | object | 见 [fallback](#fallback) | 重试与熔断冷却。 |
 | `holidays` | object | 见 [holidays](#holidays) | 节假日数据链。 |
@@ -109,8 +109,8 @@ delegated 路由的请求由 Harness 自己的 adapter 处理；插件只做两�
 | 字段 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `virtual.provider` | string | `time-router` | 虚拟 provider id。插件在激活时用该 id 注册 adapter，并拦截发往它的 `llm/stream`。 |
-| `virtual.models.chat` | string | `auto-chat` | 聊天虚拟模型 id。 |
-| `virtual.models.reasoner` | string | `auto-reasoner` | 推理虚拟模型 id。必须是两个不同的值才有意义（相同会告警）。 |
+| `virtual.models.chat` | string | `auto-flash` | 聊天虚拟模型 id。 |
+| `virtual.models.reasoner` | string | `auto-pro` | 推理虚拟模型 id。必须是两个不同的值才有意义（相同会告警）。 |
 
 改名后记得同步把 Harness 的默认模型指向新的 provider/model id；旧的默认模型会指向一个不存在的路由，从而破坏模型选择。
 
@@ -269,8 +269,8 @@ direct 路由的密钥解析顺序（`src/openai.js` 的 `resolveApiKey()`）：
     virtual:
       provider: time-router
       models:
-        chat: auto-chat
-        reasoner: auto-reasoner
+        chat: auto-flash
+        reasoner: auto-pro
     fallback:
       enabled: true
       sameProviderRetry: 1

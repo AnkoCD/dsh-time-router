@@ -2,7 +2,7 @@
 
 [中文](README.zh.md) · English
 
-`dsh-time-router` is a plugin (bundle) for DeepSeek Harness (dsh) 0.2.2-rc.1 that routes model calls by Beijing time: workdays `09:00–12:00` and `14:00–18:00` go to a **peak** route, every other time (including weekends and statutory holidays) goes to an **off-peak** route. It registers a virtual provider `time-router` (virtual models `auto-chat` / `auto-reasoner`), intercepts the Harness `llm/stream` waterfall for that provider, locks each turn to one real route and streams from it. It ships built-in China holiday data for 2025–2027 with optional online refresh, per-turn locking, circuit breakers with an explained fallback, a status/usage ring with a JSONL event log, a `/time-router` command, an HTTP status API, and a status chip in the composer dock.
+`dsh-time-router` is a plugin (bundle) for DeepSeek Harness (dsh) 0.2.2-rc.1 that routes model calls by Beijing time: workdays `09:00–12:00` and `14:00–18:00` go to a **peak** route, every other time (including weekends and statutory holidays) goes to an **off-peak** route. It registers a virtual provider `time-router` (virtual models `auto-flash` / `auto-pro`), intercepts the Harness `llm/stream` waterfall for that provider, locks each turn to one real route and streams from it. It ships built-in China holiday data for 2025–2027 with optional online refresh, per-turn locking, circuit breakers with an explained fallback, a status/usage ring with a JSONL event log, a `/time-router` command, an HTTP status API, and a status chip in the composer dock.
 
 ## Contents
 
@@ -22,7 +22,7 @@
 
 - **Time-of-day routing in Beijing time**: peak windows default to workdays `09:00–12:00` and `14:00–18:00` (`Asia/Shanghai`), treated as half-open `[start, end)` intervals; everything outside them uses off-peak.
 - **Holiday aware**: weekends and statutory holidays stay off-peak all day; State Council make-up workdays count as workdays and are judged against the peak windows as usual.
-- **Virtual provider + virtual models**: `time-router` / `auto-chat`, `auto-reasoner` (all renamable). The model picker, capability checks and session attribution see one stable provider/model pair.
+- **Virtual provider + virtual models**: `time-router` / `auto-flash`, `auto-pro` (all renamable). The model picker, capability checks and session attribution see one stable provider/model pair.
 - **Each route is direct or delegated**: a route with `baseURL` is *direct* (the plugin owns an OpenAI Chat Completions endpoint); a route with only `provider:` is *delegated* (it reuses an already registered Harness route). The two routes are chosen independently.
 - **Per-turn locking, never a mid-turn switch**: one turn (identified by that turn's last durable user message id) keeps its route; tool-loop continuations and auxiliary requests (session title, compaction) inherit the lock.
 - **First-token commit**: before the first chunk the router may retry the same route once (configurable) and then switch to the other route; after the first chunk the turn is committed.
@@ -167,9 +167,9 @@ For a `link:` checkout of this repository you can equally edit [`cordis.patch.ym
 
 **3. Point the Harness default model at the virtual route**
 
-Traffic only reaches the router when the default model is `time-router` / `auto-chat` (or `auto-reasoner` for reasoning work); otherwise the plugin stays idle. Two equivalent ways:
+Traffic only reaches the router when the default model is `time-router` / `auto-flash` (or `auto-pro` for reasoning work); otherwise the plugin stays idle. Two equivalent ways:
 
-- **Settings → Models**: choose provider `time-router`, model `auto-chat`.
+- **Settings → Models**: choose provider `time-router`, model `auto-flash`.
 - Override the default-model row in the profile patch:
 
 ```yaml
@@ -177,7 +177,7 @@ Traffic only reaches the router when the default model is `time-router` / `auto-
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
     provider: time-router
-    model: auto-chat
+    model: auto-flash
     reasoningEffort: high
 ```
 
@@ -196,7 +196,7 @@ The exhaustive field table (type, default, range, validation), key storage, warn
 | `peakWindows` | `[['09:00','12:00'], ['14:00','18:00']]` | Half-open intervals; no midnight wrap, no equal start/end; overlaps warn |
 | `peak` | direct OpenCode Go | A `baseURL` makes it direct; otherwise it needs `provider:` |
 | `offPeak` | delegated `deepseek-official` | Same rule |
-| `virtual` | `time-router` / `auto-chat` + `auto-reasoner` | Virtual provider and model ids |
+| `virtual` | `time-router` / `auto-flash` + `auto-pro` | Virtual provider and model ids |
 | `manual` | `{ mode: auto, until: null }` | `auto` / `peak` / `offPeak`, optionally with an ISO expiry |
 | `fallback` | `{ enabled: true, sameProviderRetry: 1, quotaCooldownMinutes: 30, authCooldownMinutes: 0 }` | Retry and breaker cooldowns |
 | `holidays` | `{ online: true, refreshDays: 7, sources, overrides: {} }` | Online refresh and manual overrides (`YYYY-MM-DD → holiday\|workday`) |
@@ -319,7 +319,7 @@ Full step-by-step fixes are in **[docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.
 | `↩ fallback` / fallback notices | The notice states the cause and the pricing consequence; the status API's `notices`/`events` and the event log hold the full record |
 | Time decisions look wrong | Check `timezone`, the half-open `peakWindows`, a `manual` override, and `debug.fakeNow`; the panel shows Asia/Shanghai time |
 | Holiday data stale or missing | `/time-router sync`; check `fetchedAt` in `%DSH_HOME%/plugins/time-router/holidays.cache.json` and the panel warnings |
-| `auto-chat` missing from the model picker | Is the plugin row enabled and the virtual provider registered? Look for `time-router: virtual provider ... ready` in the log |
+| `auto-flash` missing from the model picker | Is the plugin row enabled and the virtual provider registered? Look for `time-router: virtual provider ... ready` in the log |
 | Panel requests return 401 | The panel goes through the Harness `connection` check; use it from inside the Harness page, not by opening the API URL directly |
 | Where are the logs? | The Harness log (provider start, sync and fallback warnings); `%DSH_HOME%/plugins/time-router/events.jsonl` (routed events); `holidays.cache.json` (holiday cache) |
 
@@ -363,8 +363,8 @@ See **[CONTRIBUTING.md](CONTRIBUTING.md)** for the contribution flow, code invar
 **Verification status** (2026-11-09, `Asia/Shanghai`):
 
 - All 43 unit tests pass (each `test/<file>.test.js` run directly).
-- The plugin is installed into the Desktop profile via `link:`, the bundle list and the `id: time-router` row are active, and `agent-default-model` points at `time-router` / `auto-chat`.
-- **End-to-end routing was exercised live**: new sessions on the `time-router` / `auto-chat` default model covered all three paths — off-peak delegation to `deepseek-official` (`deepseek-flash`), forced peak-hour direct OpenCode Go (`deepseek-v4.1-flash`, with reasoning-token usage), and an auth fallback after removing the key (`MISSING_CREDENTIAL` → the turn switched to `deepseek-official` and recorded the fallback notice). Every real request is written to `%DSH_HOME%/plugins/time-router/events.jsonl`, and the session log's `request/header` records the virtual route `time-router` / `auto-chat`.
+- The plugin is installed into the Desktop profile via `link:`, the bundle list and the `id: time-router` row are active, and `agent-default-model` points at `time-router` / `auto-flash`.
+- **End-to-end routing was exercised live**: new sessions on the `time-router` / `auto-flash` default model covered all three paths — off-peak delegation to `deepseek-official` (`deepseek-flash`), forced peak-hour direct OpenCode Go (`deepseek-v4.1-flash`, with reasoning-token usage), and an auth fallback after removing the key (`MISSING_CREDENTIAL` → the turn switched to `deepseek-official` and recorded the fallback notice). Every real request is written to `%DSH_HOME%/plugins/time-router/events.jsonl`, and the session log's `request/header` records the virtual route `time-router` / `auto-flash`.
 - Holiday sync ran live: `%DSH_HOME%/plugins/time-router/holidays.cache.json` records the 2026 and 2027 fetch results.
 - The HTTP status endpoint is registered in the running Harness: requesting `GET /api/time-router/status` outside a browser session returns 401, i.e. the Harness `connection` check is in force.
 - The chip/panel rendering was not automatically verified; treat the Harness page as the source of truth.

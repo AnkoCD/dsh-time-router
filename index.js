@@ -1,8 +1,8 @@
 /**
  * dsh-time-router — time-of-day LLM routing for DeepSeek Harness.
  *
- * Host half: registers the virtual provider (`time-router` / `auto-chat`,
- * `auto-reasoner`), intercepts the `llm/stream` waterfall for that provider,
+ * Host half: registers the virtual provider (`time-router` / `auto-flash`,
+ * `auto-pro`), intercepts the `llm/stream` waterfall for that provider,
  * and answers each request from the peak or off-peak route chosen for the
  * current turn. See README.zh.md for the full behaviour contract.
  *

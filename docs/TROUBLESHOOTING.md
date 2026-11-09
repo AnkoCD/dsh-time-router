@@ -10,7 +10,7 @@
 - [4. 看到回退通知 / 回退没有发生](#4-看到回退通知--回退没有发生)
 - [5. 时间判定与预期不符](#5-时间判定与预期不符)
 - [6. 节假日数据缺失或陈旧](#6-节假日数据缺失或陈旧)
-- [7. 模型选择器里找不到 auto-chat](#7-模型选择器里找不到-auto-chat)
+- [7. 模型选择器里找不到 auto-flash](#7-模型选择器里找不到-auto-flash)
 - [8. 插件似乎没生效](#8-插件似乎没生效)
 - [9. 面板请求 401 / 面板不更新](#9-面板请求-401--面板不更新)
 - [10. 日志与诊断信息在哪里](#10-日志与诊断信息在哪里)
@@ -139,9 +139,9 @@ this turn is billed at peak pricing; OpenCode Go cools down until 2026-11-09T04:
 - 只想单独修正某几天，用 `holidays.overrides`（`holiday` 表示休息日，`workday` 表示工作日），它优先级最高。
 - 内置数据字段说明与核验记录见 [holiday-sources.md](holiday-sources.md)。
 
-## 7. 模型选择器里找不到 auto-chat
+## 7. 模型选择器里找不到 auto-flash
 
-**现象**：Settings → Models 里没有 `time-router` / `auto-chat`，或默认模型指向它但无法选择。
+**现象**：Settings → Models 里没有 `time-router` / `auto-flash`，或默认模型指向它但无法选择。
 
 **原因与处理**：
 
@@ -156,14 +156,14 @@ this turn is billed at peak pricing; OpenCode Go cools down until 2026-11-09T04:
 
 **现象**：路由判定、面板、命令都存在，但请求从不经过路由器；事件日志没有新行。
 
-**最常见原因**：Harness 的默认模型没有指向 `time-router` / `auto-chat`，所以请求走的是真实路由，插件处于空闲状态。两种改法：Settings → Models，或 profile patch：
+**最常见原因**：Harness 的默认模型没有指向 `time-router` / `auto-flash`，所以请求走的是真实路由，插件处于空闲状态。两种改法：Settings → Models，或 profile patch：
 
 ```yaml
 - id: agent-default-model
   name: "@deepseek-ai/dsh-agent-default-model"
   config:
     provider: time-router
-    model: auto-chat
+    model: auto-flash
     reasoningEffort: high
 ```
 
