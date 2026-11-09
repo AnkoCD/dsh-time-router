@@ -1,0 +1,55 @@
+{
+  "name": "dsh-time-router",
+  "version": "0.1.0",
+  "description": "Time-of-day LLM routing for DeepSeek Harness: peak hours go to a second provider route, off-peak goes to the official one, with per-turn locking, China holiday awareness and automatic fallback.",
+  "type": "module",
+  "license": "MIT",
+  "author": "dsh-time-router contributors",
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "cordis",
+    "plugin",
+    "llm",
+    "router",
+    "time-based-routing"
+  ],
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "src/**/*.js",
+    "data/*.json",
+    "locale/*.json",
+    "cordis.patch.yml",
+    "icon.svg",
+    "docs/**/*.md",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-conversation"
+      ]
+    }
+  },
+  "scripts": {
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

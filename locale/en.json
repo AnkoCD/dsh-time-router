@@ -1,0 +1,6 @@
+{
+  "meta": {
+    "title": "Time router",
+    "description": "Routes model calls between a peak-hour provider route and an off-peak one by Beijing time, with per-turn locking, China holiday awareness, and automatic fallback."
+  }
+}

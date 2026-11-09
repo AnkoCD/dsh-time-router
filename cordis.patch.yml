@@ -1,0 +1,33 @@
+# dsh-time-router bundle patch.
+#
+# Inserts one Host row (the virtual provider + router) and one Client module
+# (the status chip inside the composer dock). Every field below is optional;
+# the plugin's own defaults already point at OpenCode Go for peak hours and the
+# official DeepSeek route for off-peak hours.
+#
+# To use a different peak endpoint, replace the `peak` section:
+#
+#   peak:
+#     label: My gateway
+#     baseURL: https://gateway.example/v1
+#     apiKeyEnv: MY_GATEWAY_KEY
+#     models: { chat: my-chat-model, reasoner: my-reasoner-model }
+#     contextWindow: 131072
+#     maxTokens: 16384
+#
+# A route with only `provider:` is delegated to that existing Harness route.
+- insert:
+    - id: time-router
+      name: dsh-time-router
+      config:
+        enabled: true
+        timezone: Asia/Shanghai
+        peakWindows:
+          - ['09:00', '12:00']
+          - ['14:00', '18:00']
+        offPeak:
+          provider: deepseek-official
+        fallback:
+          enabled: true
+          sameProviderRetry: 1
+          quotaCooldownMinutes: 30
