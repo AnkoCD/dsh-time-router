@@ -1,6 +1,6 @@
 # dsh-time-router
 
-[![topic: dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-2ea44f?logo=github)](https://github.com/topics/dsh-plugin) [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4d6bfe)](https://github.com/topics/dsh-plugin)
+[![topic: dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-2ea44f?logo=github)](https://github.com/topics/dsh-plugin) [![CI](https://github.com/AnkoCD/dsh-time-router/actions/workflows/ci.yml/badge.svg)](https://github.com/AnkoCD/dsh-time-router/actions/workflows/ci.yml) [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4d6bfe)](https://github.com/topics/dsh-plugin)
 
 中文 · [English](README.md)
 
@@ -85,6 +85,12 @@
 - Node **≥ 22**（只用于跑测试；插件本身零运行时依赖，`link:`／本地目录安装不需要 `node_modules`）。
 
 **1. 安装插件**
+
+先取到代码（公开仓库在 GitHub）：
+
+```bash
+git clone https://github.com/AnkoCD/dsh-time-router.git
+```
 
 三种等价方式，任选其一：
 

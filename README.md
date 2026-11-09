@@ -1,6 +1,6 @@
 # dsh-time-router
 
-[![topic: dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-2ea44f?logo=github)](https://github.com/topics/dsh-plugin) [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4d6bfe)](https://github.com/topics/dsh-plugin)
+[![topic: dsh-plugin](https://img.shields.io/badge/topic-dsh--plugin-2ea44f?logo=github)](https://github.com/topics/dsh-plugin) [![CI](https://github.com/AnkoCD/dsh-time-router/actions/workflows/ci.yml/badge.svg)](https://github.com/AnkoCD/dsh-time-router/actions/workflows/ci.yml) [![DeepSeek Harness](https://img.shields.io/badge/DeepSeek%20Harness-plugin-4d6bfe)](https://github.com/topics/dsh-plugin)
 
 [中文](README.zh.md) · English
 
@@ -87,6 +87,12 @@ A request first passes the `llm/stream` waterfall, then adapter projection and d
 - Node **≥ 22** (tests only; the plugin itself has zero runtime dependencies and a `link:` / local-directory install needs no `node_modules`).
 
 **1. Install the plugin**
+
+Get the code first (the public repo lives on GitHub):
+
+```bash
+git clone https://github.com/AnkoCD/dsh-time-router.git
+```
 
 Three equivalent options:
 

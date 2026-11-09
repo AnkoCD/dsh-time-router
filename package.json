@@ -5,6 +5,14 @@
   "type": "module",
   "license": "MIT",
   "author": "dsh-time-router contributors",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AnkoCD/dsh-time-router.git"
+  },
+  "homepage": "https://github.com/AnkoCD/dsh-time-router#readme",
+  "bugs": {
+    "url": "https://github.com/AnkoCD/dsh-time-router/issues"
+  },
   "keywords": [
     "deepseek-harness",
     "dsh",
